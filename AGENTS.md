@@ -40,6 +40,21 @@
 | 执行步骤数 | ≥ 5 步 |
 | 预计耗时 | > 10 分钟 |
 
+### 任务能力分类（可选参考）
+
+识别任务属于哪种能力类型，有助于评估复杂度：
+
+| 能力类型 | 说明 |
+|---------|------|
+| `content_generation` | 内容生成（LLM 原生能力） |
+| `data_transformation` | 数据转换、清洗 |
+| `file_operations` | 文件读写操作 |
+| `code_execution` | 脚本执行 |
+| `api_integration` | 第三方 API 对接 |
+| `browser_automation` | 网页操作、抓取 |
+| `message_delivery` | 消息通知 |
+| `scheduling` | 定时任务 |
+
 ### 拆分流程
 
 ```
@@ -69,6 +84,7 @@
 ## 任务 ID: TB-YYYY-MM-DD-XXX
 ## 目标: [一句话]
 ## 标准: [可量化的完成条件]
+## 验证: [如何验证任务成功]
 ## 交付物: [具体文件/结果]
 ```
 
