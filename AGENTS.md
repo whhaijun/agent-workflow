@@ -42,7 +42,7 @@
 
 ### 任务能力分类（可选参考）
 
-识别任务属于哪种能力类型，有助于评估复杂度：
+识别任务属于哪种能力类型，有助于评估复杂度和搜索现有 skill：
 
 | 能力类型 | 说明 |
 |---------|------|
@@ -54,6 +54,11 @@
 | `browser_automation` | 网页操作、抓取 |
 | `message_delivery` | 消息通知 |
 | `scheduling` | 定时任务 |
+
+**技能搜索：** 如需外部能力，可搜索现有 skill：
+```bash
+npx skills find <关键词>  # 如: npx skills find slack
+```
 
 ### 拆分流程
 
@@ -73,6 +78,37 @@
 - 每个子任务目标 ≤ 2 分钟，超过则继续拆细
 - 工具失败 → 标注"⚠️ 跳过"继续，不卡住整体
 - 完成后统一汇报，不逐个打扰用户
+
+### 拆分方案模板（YAML 格式，适合 agent 解析）
+
+```yaml
+task_decomposition:
+  title: "任务名称"
+  
+  subtasks:
+    - task_id: 1
+      name: "子任务 1"
+      capability: "api_integration"
+      dependencies: []
+      estimated_time: "2min"
+      verification: "如何验证成功"
+      
+    - task_id: 2
+      name: "子任务 2"
+      capability: "content_generation"
+      dependencies: [1]
+      estimated_time: "1min"
+      verification: "检查输出格式"
+  
+  execution_plan:
+    batch_1:
+      parallel: true
+      max_concurrent: 5
+      tasks: [1]
+    batch_2:
+      tasks: [2]
+      depends_on: [batch_1]
+```
 
 ---
 
