@@ -198,7 +198,20 @@ my-agent/
 │   ├── active/             # 进行中的任务
 │   └── archive/            # 已完成的任务
 └── scripts/
-    └── search.sh           # 快速搜索脚本
+    ├── search.sh           # 快速搜索脚本
+    ├── compress_hot.sh     # 自动压缩 hot.md
+    ├── archive_logs.sh     # 自动归档旧日志
+    ├── health_check.sh     # 健康检查
+    ├── safe_write.sh       # 安全写入（文件锁）
+    ├── log_metrics.sh      # 记录性能指标
+    └── generate_report.sh  # 生成性能周报
+├── docs/
+│   ├── MEMORY_COMPRESSION.md  # 记忆压缩规则
+│   ├── MULTI_AGENT_COLLABORATION.md  # 多 Agent 协作
+│   └── PERFORMANCE_MONITORING.md  # 性能监控
+├── examples/
+│   └── case-01-ios-dev/    # 真实案例（30天演化）
+└── reports/                # 性能报告
 ```
 
 ---
@@ -235,6 +248,51 @@ my-agent/
 ## 📄 License
 
 MIT License — 自由使用，无需署名
+
+---
+
+## 🛠️ 自动化工具
+
+### 健康检查
+```bash
+cd ~/my-agent
+./scripts/health_check.sh
+```
+
+### 压缩 hot.md
+```bash
+# 当 hot.md 超过 100 行时运行
+./scripts/compress_hot.sh
+```
+
+### 归档旧日志
+```bash
+# 归档 90 天前的日志
+./scripts/archive_logs.sh
+```
+
+### 性能监控
+```bash
+# 记录性能数据（Agent 自动调用）
+./scripts/log_metrics.sh 1200 800 "代码开发" "是" 0 5
+
+# 生成周报
+./scripts/generate_report.sh
+```
+
+详细说明：
+- 记忆压缩：`docs/MEMORY_COMPRESSION.md`
+- 多 Agent 协作：`docs/MULTI_AGENT_COLLABORATION.md`
+- 性能监控：`docs/PERFORMANCE_MONITORING.md`
+
+---
+
+## 📚 真实案例
+
+查看 `examples/case-01-ios-dev/` 了解：
+- 第 1 天到第 30 天的演化过程
+- hot.md 如何从空白到 85 行
+- Token 消耗如何减少 60%
 
 ---
 
