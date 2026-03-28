@@ -21,6 +21,7 @@
 | 🎯 3高原则 | 高质量 + 高效率 + 高节省 |
 | 🔒 安全意识 | 红线规则，防止危险操作 |
 | ✅ 质量自检 | 完成后自动检查，保证质量 |
+| 🆕 **流程规范** | **完整的 WBS/汇报/安全/Context 管理规范** |
 
 ---
 
@@ -233,6 +234,62 @@ my-agent/
 | 第 1 周 | 积累 10-20 条基础规则，减少重复纠正 |
 | 第 1 个月 | HOT memory 稳定，减少 30% 重复纠正 |
 | 第 3 个月 | 减少 65% 重复纠正，Token 节省 60% |
+
+---
+
+## 📋 流程规范（v2.0 新增）
+
+完整的团队协作流程规范，包含 WBS 拆分、任务汇报、安全检查、Context 管理。
+
+### 核心规范文档
+
+所有规范文档位于 `process-standards/` 目录：
+
+| 文档 | 说明 |
+|------|------|
+| `README.md` | 规范索引，新成员必读 |
+| `core/WBS_RULES_v2.0.md` | WBS 拆分规范（含连续任务触发条件、强制断点） |
+| `core/TASK_REPORTING_v2.0.md` | 任务汇报规范（5个强制检查点、标准格式） |
+| `core/SECURITY_CHECK.md` | 安全检查规范（操作前检查清单、敏感数据识别） |
+| `core/CONTEXT_MANAGEMENT_v2.0.md` | Context 管理规范（实时监控、预警机制） |
+| `core/TEAM_PROTOCOL.md` | 团队协作协议（通信协议、Task Brief 格式） |
+
+### 模板文件
+
+直接复制使用的模板：
+
+- `templates/task_brief_template.md` — 跨 agent 传递任务
+- `templates/wbs_template.md` — 任务拆分方案
+- `templates/report_template.md` — 任务汇报
+- `templates/security_check_template.md` — 安全检查
+
+### 快速开始
+
+1. **新成员必读**（按顺序）：
+   - `process-standards/README.md` — 规范索引（5分钟）
+   - `core/WBS_RULES_v2.0.md` — WBS 拆分规范（5分钟）
+   - `core/TASK_REPORTING_v2.0.md` — 任务汇报规范（5分钟）
+
+2. **执行任务时**：
+   - 收到任务 → 先评估是否需要拆分（WBS_RULES）
+   - 每个批次完成 → 输出阶段汇报（TASK_REPORTING）
+   - 危险操作前 → 执行安全检查（SECURITY_CHECK）
+   - Context > 70% → 采取优化措施（CONTEXT_MANAGEMENT）
+
+3. **实施计划**：
+   - 详见 `process-standards/IMPLEMENTATION_PLAN_v2.0.md`
+   - 预计 1 周完成 P0（文档整理、规则学习、试运行）
+   - 预计 2 周完成 P1（安全诊断、Context 管理）
+
+### 预期效果
+
+| 指标 | 改善率 |
+|------|--------|
+| 任务超时率 | -40% |
+| Context 超限率 | -60% |
+| 汇报格式规范率 | +50% |
+| 安全事故次数 | -80% |
+| 文档查找时间 | -70% |
 
 ---
 
