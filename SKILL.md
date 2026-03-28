@@ -1,80 +1,71 @@
 ---
-name: agent-workflow
-description: AI Agent 工作方法论 Skill — 让任何 AI Agent 都能高效、可控、可靠地工作。提供 WBS 任务拆分、P0/P1 分级汇报、安全检查、Context 管理、分层记忆等核心规范。适用于 Claude Code、Cursor、Codex、OpenClaw 等任何 AI agent。
+name: smart-agent-workflow
+description: AI Agent 工作方法论 Skill — 专注 3高（高质量+高效率+高节省）。提供任务类型判断、WBS 拆分、P0/P1 分级汇报、安全检查、Context 管理。渠道无关，适用于 Claude Code、Cursor、Codex、OpenClaw 等任何 AI agent。唯一提供完整工作方法论的 Skill。
 ---
 
-# Agent Workflow Skill
+# Smart Agent Workflow
 
-**AI Agent 工作方法论 — 让任何 AI Agent 都能高效、可控、可靠地工作**
+**专注 3高：高质量 + 高效率 + 高节省**
 
-## 这是什么
+## 核心价值
 
-一个"工作方法论" Skill，类似于 GTD（Getting Things Done）之于时间管理。
-
-不是又一个 agent 框架，而是告诉任何 AI agent "应该怎么工作"的方法论。
+| 原则 | 解决的问题 | 实现方式 |
+|------|-----------|---------|
+| 🎯 高质量 | agent 容易失控、偏离目标 | WBS 拆分 + P0/P1 汇报规范 |
+| ⚡ 高效率 | 任务执行混乱、缺少规范 | 任务类型判断 + 批次执行 |
+| 💰 高节省 | Context 超限、Token 浪费 | Context 管理 + 分层记忆 |
 
 ## 核心规范
 
-### P0 规范（所有任务必须遵守）
-
-1. **复杂任务必须拆分** — 文件≥3 / 步骤≥5 / 耗时>15分钟（满足2条）
-2. **卡住必须上报** — 失败≥2次 / 等待>30秒
-3. **完成必须汇报** — 目标 + 结果 + 产出（3句话）
-
-### P1 规范（复杂任务建议遵守）
-
-4. **批次完成汇报** — 每批次完成后简短汇报
-5. **危险操作确认** — git push / 对外发送 / 删除
-6. **连续任务插断点** — 连续执行>15分钟插断点
-
-## 任务类型判断
+### 任务类型判断
 
 ```
-收到任务
-    ↓
-新任务 or 连续任务？
-    ↓
-简单 or 复杂？（满足2条：文件≥3 / 步骤≥5 / 耗时>15分钟）
-    ↓
-简单任务 → P0 规范
-复杂任务 → P0 + P1 规范
+收到任务 → 新任务 or 连续任务？
+         → 简单 or 复杂？（文件≥3 / 步骤≥5 / 耗时>15分钟，满足2条）
+         → 简单任务用 P0，复杂任务用 P0+P1
+```
+
+### P0 规范（所有任务必须，3条）
+
+1. 复杂任务必须拆分
+2. 卡住必须上报（失败≥2次 / 等待>30秒）
+3. 完成必须汇报（目标 + 结果 + 产出）
+
+### P1 规范（复杂任务建议，3条）
+
+4. 批次完成汇报
+5. 危险操作确认
+6. 连续任务插断点
+
+## 推荐组合
+
+```bash
+# 最小配置
+clawhub install smart-agent-workflow
+
+# 标准配置（推荐）
+clawhub install smart-agent-workflow
+clawhub install self-improving
+
+# 完整配置
+clawhub install smart-agent-workflow
+clawhub install self-improving
+clawhub install proactivity
 ```
 
 ## 适用范围
 
+渠道无关，适用于任何 AI agent：
 - Claude Code（推荐）
-- Cursor
+- Cursor / Windsurf
 - Codex
 - OpenClaw
-- 任何支持读取本地文件的 AI agent
-
-## 文档结构
-
-```
-agent-workflow/
-├── SKILL.md                     # 本文件
-├── AGENTS.md                    # 核心规范（必读）
-├── IDENTITY.md                  # Agent 身份配置
-├── memory/                      # 分层记忆
-├── logs/                        # 结构化日志
-├── process-standards/           # 完整流程规范
-│   ├── core/
-│   │   ├── WBS_RULES_v3.0.md
-│   │   ├── TASK_REPORTING_v3.0.md
-│   │   ├── SECURITY_CHECK.md
-│   │   └── CONTEXT_MANAGEMENT_v2.0.md
-│   └── templates/
-└── scripts/
-```
 
 ## 快速开始
 
-```bash
-# 安装
-clawhub install agent-workflow
-
-# 或者 git clone
-git clone https://github.com/whhaijun/agent-workflow.git ~/agent-workflow
+```markdown
+# 在 CLAUDE.md 或 Rules for AI 中添加：
+读取 ~/smart-agent/AGENTS.md 并遵守所有规范
 ```
 
-让 Agent 读取 `AGENTS.md` 并遵守所有规范即可开始使用。
+详细文档：https://github.com/whhaijun/agent-workflow
