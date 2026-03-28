@@ -30,8 +30,8 @@
 
 | 文档 | 路径 | 用途 | 优先级 |
 |------|------|------|--------|
-| WBS 拆分规范 | `core/WBS_RULES_v2.0.md` | 任务拆分、断点机制 | ⭐⭐⭐ |
-| 任务汇报规范 | `core/TASK_REPORTING_v2.0.md` | 汇报时机、格式 | ⭐⭐⭐ |
+| WBS 拆分规范 | `core/WBS_RULES_v3.0.md` | 任务拆分、P0/P1分级 | ⭐⭐⭐ |
+| 任务汇报规范 | `core/TASK_REPORTING_v3.0.md` | 汇报时机、格式（简化版） | ⭐⭐⭐ |
 | 安全检查规范 | `core/SECURITY_CHECK.md` | 操作前安全检查 | ⭐⭐⭐ |
 
 ### 2. 协作通信
