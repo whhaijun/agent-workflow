@@ -148,14 +148,14 @@ ollama run llama2
 cd ~/Desktop/smart-agent-template/integrations/telegram
 
 # 方式 1：环境变量
-export TELEGRAM_BOT_TOKEN="8617657397:AAEqcEphNdIPBN0ENveku94fjEwX8Ft8yvs"
-export TELEGRAM_ADMIN_CHAT_ID="7420831199"
+export TELEGRAM_BOT_TOKEN="your_bot_token"
+export TELEGRAM_ADMIN_CHAT_ID="your_chat_id"
 export AI_ENGINE=ollama
 export OLLAMA_MODEL=llama2
 
 # 方式 2：或者创建 .env 文件
-echo 'TELEGRAM_BOT_TOKEN=8617657397:AAEqcEphNdIPBN0ENveku94fjEwX8Ft8yvs' > .env
-echo 'TELEGRAM_ADMIN_CHAT_ID=7420831199' >> .env
+echo 'TELEGRAM_BOT_TOKEN=your_bot_token' > .env
+echo 'TELEGRAM_ADMIN_CHAT_ID=your_chat_id' >> .env
 echo 'AI_ENGINE=ollama' >> .env
 echo 'OLLAMA_MODEL=llama2' >> .env
 ```
@@ -174,7 +174,7 @@ python bot.py
 ### 第 6 步：测试 Bot
 
 1. 打开 Telegram
-2. 搜索 `@WftOpenClaw_bot`
+2. 搜索你的 Bot
 3. 发送消息测试
 
 ## 🎨 推荐模型对比

@@ -47,14 +47,14 @@ nano .env.local
 
 ```bash
 # Telegram Bot 配置
-TELEGRAM_BOT_TOKEN=8617657397:AAEqcEphNdIPBN0ENveku94fjEwX8Ft8yvs
-TELEGRAM_ADMIN_CHAT_ID=7420831199
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_ADMIN_CHAT_ID=your_chat_id_here
 
 # AI 引擎配置
 AI_ENGINE=claude
 
 # Claude API 配置
-CLAUDE_API_KEY=sk-ant-api03-你的真实API_Key
+CLAUDE_API_KEY=your_claude_api_key_here
 CLAUDE_MODEL=claude-sonnet-4
 
 # 代理配置
@@ -103,7 +103,7 @@ curl https://api.anthropic.com/v1/messages \
 
 1. 启动 Bot：`./start_local.sh`
 2. 打开 Telegram
-3. 搜索 `@WftOpenClaw_bot`
+3. 搜索你的 Bot（如 `@YourBot`）
 4. 发送消息测试
 
 ## 🐛 故障排查

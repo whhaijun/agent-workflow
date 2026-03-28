@@ -6,7 +6,7 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from .ai_adapter import AIAdapter
+from ai_adapter import AIAdapter
 
 logger = logging.getLogger(__name__)
 

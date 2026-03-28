@@ -50,10 +50,13 @@ class OpenAIAdapter(AIAdapter):
 class ClaudeAdapter(AIAdapter):
     """Claude 适配器"""
     
-    def __init__(self, api_key: str, model: str = "claude-sonnet-4"):
+    def __init__(self, api_key: str, model: str = "claude-sonnet-4", base_url: str = None):
         try:
             import anthropic
-            self.client = anthropic.AsyncAnthropic(api_key=api_key)
+            kwargs = {"api_key": api_key}
+            if base_url:
+                kwargs["base_url"] = base_url
+            self.client = anthropic.AsyncAnthropic(**kwargs)
             self.model = model
         except ImportError:
             raise ImportError("请安装 anthropic: pip install anthropic")
@@ -138,7 +141,7 @@ def create_ai_adapter(engine: str, api_key: Optional[str] = None,
     if engine == "openai":
         return OpenAIAdapter(api_key, model or "gpt-4")
     elif engine == "claude":
-        return ClaudeAdapter(api_key, model or "claude-sonnet-4")
+        return ClaudeAdapter(api_key, model or "claude-sonnet-4", base_url)
     elif engine == "deepseek":
         return DeepSeekAdapter(api_key, model or "deepseek-chat")
     elif engine == "ollama":
