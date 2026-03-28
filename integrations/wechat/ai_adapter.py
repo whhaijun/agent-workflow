@@ -54,15 +54,18 @@ class ClaudeAdapter(AIAdapter):
         except ImportError:
             raise ImportError("请安装: pip install anthropic")
 
-    async def get_response(self, message: str, context: dict, history: list = None) -> str:
+    async def get_response(self, message: str, context: dict, history: list = None, system: str = None) -> str:
         messages = history if history else [{"role": "user", "content": message}]
         response = await self.client.messages.create(
             model=self.model,
             max_tokens=1024,
-            system="你是一个智能助手，请用简洁友好的方式回复。记住对话历史，保持上下文连贯。",
+            system=system or "你是一个智能助手，请用简洁友好的方式回复。记住对话历史，保持上下文连贯。",
             messages=messages
         )
         return response.content[0].text
+
+    def get_response_sync(self, message: str, context: dict, history: list = None, system: str = None) -> str:
+        return asyncio.run(self.get_response(message, context, history=history, system=system))
 
 
 class DeepSeekAdapter(AIAdapter):
