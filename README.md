@@ -20,7 +20,7 @@
 |------|-----------|---------|
 | 🎯 高质量 | agent 容易失控、偏离目标 | WBS 拆分 + P0/P1 汇报规范 |
 | ⚡ 高效率 | 任务执行混乱、缺少规范 | 任务类型判断 + 批次执行 |
-| 💰 高节省 | Context 超限、Token 浪费 | Context 管理 + 分层记忆 |
+| 💰 高节省 | Context 超限、Token 浪费 | Context 管理 + DO NOT 列表 + Credit Burn Loop 防护 |
 
 ---
 
