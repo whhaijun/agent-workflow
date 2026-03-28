@@ -11,11 +11,11 @@ from typing import Optional
 class AIAdapter:
     """AI 引擎适配器基类"""
 
-    def get_response_sync(self, message: str, context: dict) -> str:
+    def get_response_sync(self, message: str, context: dict, history: list = None) -> str:
         """同步调用（微信 Webhook 使用）"""
-        return asyncio.run(self.get_response(message, context))
+        return asyncio.run(self.get_response(message, context, history=history))
 
-    async def get_response(self, message: str, context: dict) -> str:
+    async def get_response(self, message: str, context: dict, history: list = None) -> str:
         raise NotImplementedError
 
 
@@ -54,12 +54,13 @@ class ClaudeAdapter(AIAdapter):
         except ImportError:
             raise ImportError("请安装: pip install anthropic")
 
-    async def get_response(self, message: str, context: dict) -> str:
+    async def get_response(self, message: str, context: dict, history: list = None) -> str:
+        messages = history if history else [{"role": "user", "content": message}]
         response = await self.client.messages.create(
             model=self.model,
             max_tokens=1024,
-            system="你是一个智能助手，请用简洁友好的方式回复。",
-            messages=[{"role": "user", "content": message}]
+            system="你是一个智能助手，请用简洁友好的方式回复。记住对话历史，保持上下文连贯。",
+            messages=messages
         )
         return response.content[0].text
 
