@@ -89,14 +89,18 @@ class MessageHandlers:
         
         # 获取记忆统计
         history = self.memory.load_history(user_id)
-        memory_text = self.memory.load_memory(user_id)
+        memory_text = self.memory._load_memory_file(user_id)  # 使用内部方法，不触发语义搜索
+        
+        # 检测 OpenClaw
+        openclaw_status = "✅ 已启用（语义搜索）" if self.memory.use_openclaw else "❌ 未安装"
         
         status_text = f"""
 ✅ 系统状态
 
 • Bot 状态: 运行中
 • AI 引擎: 已连接
-• 版本: v2.0.0
+• 版本: v2.1.0
+• OpenClaw: {openclaw_status}
 
 🧠 你的记忆状态：
 • 短期记忆：{len(history)} 条消息
@@ -123,7 +127,7 @@ class MessageHandlers:
         await update.message.reply_text(f"🧠 我对你的记忆：\n\n{memory_text}")
     
     async def handle_text_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """处理普通文本消息（优化版：上下文感知 + 自我学习）"""
+        """处理普通文本消息（优化版：上下文感知 + 自我学习 + 语义搜索）"""
         user = update.effective_user
         user_id = str(user.id)
         user_message = update.message.text
@@ -134,9 +138,10 @@ class MessageHandlers:
         await update.message.chat.send_action("typing")
         
         try:
-            # 1. 加载记忆（上下文感知）
+            # 1. 加载记忆（上下文感知 + 语义搜索）
             history = self.memory.load_history(user_id)
-            memory_text = self.memory.load_memory(user_id)
+            # 如果有 OpenClaw，传入查询进行语义搜索
+            memory_text = self.memory.load_memory(user_id, query=user_message if self.memory.use_openclaw else None)
             
             # 2. 检测用户纠正（自我学习）
             correction_detected = self._detect_correction(user_message)

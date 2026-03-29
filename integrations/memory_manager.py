@@ -5,10 +5,16 @@ Smart Agent 记忆管理模块
 - 第一层：短期记忆（最近5轮对话，防崩溃）
 - 第二层：长期记忆（AI自动摘要压缩，不丢失）
 - 第三层：结构化 System Prompt（准确理解上下文）
+
+自动检测 OpenClaw：
+- 如果安装了 OpenClaw → 使用 memory_search 工具（向量语义搜索）
+- 如果没有安装 → 使用本地文件 + AI 压缩方案
 """
 
 import json
 import os
+import shutil
+import subprocess
 import threading
 from datetime import datetime
 from typing import Optional
@@ -19,19 +25,49 @@ COMPRESS_TRIGGER = 5     # 每N轮触发一次压缩
 MEMORY_MAX_CHARS = 1000  # 长期记忆最大字符数
 
 
-class MemoryManager:
-    """记忆管理器"""
+def _detect_openclaw() -> bool:
+    """检测是否安装了 OpenClaw"""
+    return shutil.which("openclaw") is not None
 
-    def __init__(self, storage_dir: str, ai_client=None, ai_model: str = None):
+
+def _openclaw_memory_search(query: str, workspace: str = None) -> str:
+    """
+    使用 OpenClaw memory_search 进行语义搜索
+    返回相关记忆片段
+    """
+    try:
+        cmd = ["openclaw", "memory", "search", query]
+        if workspace:
+            cmd += ["--workspace", workspace]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return ""
+
+
+class MemoryManager:
+    """记忆管理器（自动检测 OpenClaw）"""
+
+    def __init__(self, storage_dir: str, ai_client=None, ai_model: str = None, openclaw_workspace: str = None):
         """
         storage_dir: 存储目录
         ai_client: AI 客户端（用于压缩摘要）
         ai_model: AI 模型名称
+        openclaw_workspace: OpenClaw workspace 路径（可选）
         """
         self.storage_dir = storage_dir
         self.ai_client = ai_client
         self.ai_model = ai_model
+        self.openclaw_workspace = openclaw_workspace
+        self.use_openclaw = _detect_openclaw()
         os.makedirs(storage_dir, exist_ok=True)
+        
+        if self.use_openclaw:
+            print("✅ 检测到 OpenClaw，使用 memory_search 语义搜索")
+        else:
+            print("📁 未检测到 OpenClaw，使用本地文件 + AI 压缩方案")
 
     # ========== 短期记忆（对话历史）==========
 
@@ -59,10 +95,30 @@ class MemoryManager:
         self.save_history(user_id, history)
         return history
 
-    # ========== 长期记忆（摘要压缩）==========
+    # ========== 长期记忆（摘要压缩 + 语义搜索）==========
 
-    def load_memory(self, user_id: str) -> str:
-        """加载长期记忆"""
+    def load_memory(self, user_id: str, query: str = None) -> str:
+        """
+        加载长期记忆
+        
+        Args:
+            user_id: 用户ID
+            query: 查询关键词（可选，用于语义搜索）
+        
+        Returns:
+            记忆内容
+        """
+        # 如果有 OpenClaw 且提供了查询，使用语义搜索
+        if self.use_openclaw and query:
+            search_result = _openclaw_memory_search(query, self.openclaw_workspace)
+            if search_result:
+                return f"【语义搜索结果】\n{search_result}\n\n【完整记忆】\n{self._load_memory_file(user_id)}"
+        
+        # 否则返回完整记忆
+        return self._load_memory_file(user_id)
+    
+    def _load_memory_file(self, user_id: str) -> str:
+        """加载记忆文件"""
         path = os.path.join(self.storage_dir, f"{user_id}_memory.md")
         if os.path.exists(path):
             with open(path, 'r', encoding='utf-8') as f:
