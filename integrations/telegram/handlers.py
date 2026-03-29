@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from memory_manager import MemoryManager
 from task_parser import TaskParser, ResponseValidator
 from conversation_health import ConversationHealth
+from task_tracker import TaskTracker
 
 from .ai_adapter import AIAdapter
 
@@ -36,6 +37,8 @@ class MessageHandlers:
         self.response_validator = ResponseValidator()
         # 初始化健康评分
         self.health = ConversationHealth(self.memory)
+        # 初始化任务追踪器
+        self.tracker = TaskTracker(storage_dir=storage_dir.replace("memory", "tasks"))
         logger.info(f"Memory manager initialized: {storage_dir}")
         logger.info(f"Task parser initialized")
     
@@ -177,17 +180,36 @@ class MessageHandlers:
             # 4. 应用自适应策略
             message_context = self.health.apply_strategy(strategy, message_context)
             
-            # 5. 调用 AI 获取回复（使用增强 Prompt）
+            # 5. 任务编号处理
+            task_ref = self.tracker.detect_task_reference(user_message)
+            task_info = ""
+            
+            if task_ref:
+                # 用户引用了任务编号 → 注入任务信息到 context
+                task = self.tracker.get_task(user_id, task_ref)
+                if task:
+                    task_info = f"\n\n【任务 {task_ref}】{self.tracker.format_task(task)}"
+                    message_context["system_prompt"] += f"\n\n当前讨论任务：{task_ref} - {task['title']}（状态：{task['status']}）"
+            
+            elif self.tracker.detect_new_task(user_message, parsed['intent']):
+                # 检测到新任务 → 自动创建并分配编号
+                task = self.tracker.create_task(user_id, user_message[:50])
+                task_info = f"\n\n📋 已创建任务 {task['id']}"
+            
+            # 6. 调用 AI 获取回复（使用增强 Prompt）
             enhanced_message = parsed['enhanced_prompt']
             ai_response = await self.ai_adapter.get_response(enhanced_message, message_context)
             
-            # 6. 回复验证（新增，防止乱回答）
+            # 7. 回复验证（防止乱回答）
             validation = self.response_validator.validate(ai_response, user_message, parsed)
             if not validation['valid']:
                 logger.warning(f"Response validation failed: {validation['issues']}")
-                # 添加质量提示
                 if validation['confidence'] < 0.5:
                     ai_response = f"⚠️ 以下回复仅供参考（置信度：{validation['confidence']:.0%}）：\n\n{ai_response}"
+            
+            # 附加任务编号信息
+            if task_info:
+                ai_response += task_info
             
             # 7. 保存对话到记忆
             self.memory.add_message(user_id, "user", user_message)
@@ -293,6 +315,29 @@ class MessageHandlers:
                 "memory": memory_text[:500],
                 "system_prompt": self._build_system_prompt()  # 完整规范
             }
+
+    async def tasks_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """处理 /tasks 命令 - 查看任务列表"""
+        user_id = str(update.effective_user.id)
+        tasks = self.tracker.list_tasks(user_id)
+        
+        if not tasks:
+            await update.message.reply_text("📋 暂无任务。发送命令类消息会自动创建任务。")
+            return
+        
+        pending = self.tracker.list_tasks(user_id, "pending")
+        in_progress = self.tracker.list_tasks(user_id, "in_progress")
+        done = self.tracker.list_tasks(user_id, "done")
+        
+        text = "📋 任务列表\n\n"
+        if in_progress:
+            text += "🔄 进行中：\n" + self.tracker.format_task_list(in_progress) + "\n\n"
+        if pending:
+            text += "⏳ 待处理：\n" + self.tracker.format_task_list(pending) + "\n\n"
+        if done:
+            text += "✅ 已完成：\n" + self.tracker.format_task_list(done[-3:]) + "\n"  # 只显示最近3个
+        
+        await update.message.reply_text(text)
 
     def _detect_correction(self, message: str) -> bool:
         """检测用户纠正"""

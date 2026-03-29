@@ -72,6 +72,7 @@ def main():
     application.add_handler(CommandHandler("help", handlers.help_command))
     application.add_handler(CommandHandler("status", handlers.status_command))
     application.add_handler(CommandHandler("memory", handlers.memory_command))  # 新增
+    application.add_handler(CommandHandler("tasks", handlers.tasks_command))    # 新增
     
     # 注册消息处理器
     application.add_handler(
