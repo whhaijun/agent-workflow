@@ -1,6 +1,6 @@
 """
-Telegram Bot 消息处理器（优化版 v2.0）
-新增：上下文感知、自我学习、工作规范融入
+Telegram Bot 消息处理器（优化版 v2.2）
+新增：任务解析增强、回复验证（防止乱回答）
 """
 
 import logging
@@ -9,9 +9,10 @@ import sys
 from telegram import Update
 from telegram.ext import ContextTypes
 
-# 添加父目录到路径，以便导入 memory_manager
+# 添加父目录到路径，以便导入 memory_manager 和 task_parser
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from memory_manager import MemoryManager
+from task_parser import TaskParser, ResponseValidator
 
 from .ai_adapter import AIAdapter
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class MessageHandlers:
-    """消息处理器集合（优化版）"""
+    """消息处理器集合（优化版 v2.2）"""
     
     def __init__(self, ai_adapter: AIAdapter, storage_dir: str = "./data/memory"):
         self.ai_adapter = ai_adapter
@@ -29,7 +30,11 @@ class MessageHandlers:
             ai_client=ai_adapter,  # 复用 AI 客户端
             ai_model=ai_adapter.model
         )
+        # 初始化任务解析器
+        self.task_parser = TaskParser()
+        self.response_validator = ResponseValidator()
         logger.info(f"Memory manager initialized: {storage_dir}")
+        logger.info(f"Task parser initialized")
     
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """处理 /start 命令"""
@@ -127,7 +132,7 @@ class MessageHandlers:
         await update.message.reply_text(f"🧠 我对你的记忆：\n\n{memory_text}")
     
     async def handle_text_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """处理普通文本消息（优化版：上下文感知 + 自我学习 + 语义搜索）"""
+        """处理普通文本消息（v2.2：任务解析 + 回复验证）"""
         user = update.effective_user
         user_id = str(user.id)
         user_message = update.message.text
@@ -138,40 +143,64 @@ class MessageHandlers:
         await update.message.chat.send_action("typing")
         
         try:
-            # 1. 加载记忆（上下文感知 + 语义搜索）
+            # 1. 任务解析（新增）
+            parsed = self.task_parser.parse(user_message)
+            logger.info(f"Task parsed: intent={parsed['intent']}, complexity={parsed['complexity']}")
+            
+            # 2. 加载记忆（上下文感知）
             history = self.memory.load_history(user_id)
-            # 如果有 OpenClaw，传入查询进行语义搜索
             memory_text = self.memory.load_memory(user_id, query=user_message if self.memory.use_openclaw else None)
             
-            # 2. 检测用户纠正（自我学习）
+            # 3. 检测用户纠正（自我学习）
             correction_detected = self._detect_correction(user_message)
             if correction_detected:
                 logger.info(f"Correction detected from user {user_id}")
-                # 标记为学习内容
                 user_message = f"[用户纠正] {user_message}"
             
-            # 3. 构建增强上下文
+            # 4. 构建增强上下文（使用解析后的 Prompt）
             message_context = {
                 "user_id": user_id,
                 "username": user.username,
                 "first_name": user.first_name,
                 "chat_id": update.message.chat_id,
-                "history": history,  # 短期记忆
-                "memory": memory_text,  # 长期记忆
-                "system_prompt": self._build_system_prompt()  # 工作规范
+                "history": history,
+                "memory": memory_text,
+                "system_prompt": self._build_system_prompt(),
+                "parsed": parsed  # 传递解析结果
             }
             
-            # 4. 调用 AI 获取回复
-            ai_response = await self.ai_adapter.get_response(user_message, message_context)
+            # 5. 调用 AI 获取回复（使用增强 Prompt）
+            enhanced_message = parsed['enhanced_prompt']
+            ai_response = await self.ai_adapter.get_response(enhanced_message, message_context)
             
-            # 5. 保存对话到记忆
+            # 6. 回复验证（新增，防止乱回答）
+            validation = self.response_validator.validate(ai_response, user_message, parsed)
+            if not validation['valid']:
+                logger.warning(f"Response validation failed: {validation['issues']}")
+                # 添加质量提示
+                if validation['confidence'] < 0.5:
+                    ai_response = f"⚠️ 以下回复仅供参考（置信度：{validation['confidence']:.0%}）：\n\n{ai_response}"
+            
+            # 7. 保存对话到记忆
             self.memory.add_message(user_id, "user", user_message)
             self.memory.add_message(user_id, "assistant", ai_response)
             self.memory._increment_rounds(user_id)
             
-            # 6. 异步压缩记忆（如果需要）
+            # 8. 异步压缩记忆（如果需要）
             if self.memory.should_compress(user_id):
                 logger.info(f"Triggering memory compression for user {user_id}")
+                self.memory.compress_async(user_id)
+            
+            # 9. 发送回复
+            await update.message.reply_text(ai_response)
+            
+            logger.info(f"Bot replied to {user_id} (confidence: {validation['confidence']:.0%})")
+            
+        except Exception as e:
+            logger.error(f"Error handling message: {e}", exc_info=True)
+            await update.message.reply_text(
+                "❌ 抱歉，处理消息时出错了。请稍后再试。"
+            )
                 self.memory.compress_async(user_id)
             
             # 7. 发送回复
