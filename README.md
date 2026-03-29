@@ -128,6 +128,12 @@ smart-agent-workflow/
 ├── SKILL.md                     # ClawHub 发布文件
 ├── AGENTS.md                    # 核心规范（必读）
 ├── IDENTITY.md                  # Agent 身份配置
+├── integrations/                # 集成方案（可选）
+│   ├── telegram/                # Telegram Bot 集成
+│   ├── memory_manager.py        # 记忆管理（支持 OpenClaw/ChromaDB）
+│   ├── OPENCLAW_INTEGRATION.md  # OpenClaw 集成说明
+│   ├── CHROMADB_INTEGRATION.md  # ChromaDB 集成指南（可选）
+│   └── CHROMADB_QUICKSTART.md   # ChromaDB 快速实施
 ├── memory/                      # 分层记忆（HOT/WARM/COLD）
 ├── logs/                        # 结构化日志
 ├── process-standards/           # 完整流程规范
@@ -139,6 +145,30 @@ smart-agent-workflow/
 │   └── templates/               # 可直接使用的模板
 └── scripts/                     # 工具脚本
 ```
+
+---
+
+## 🤖 Bot 集成（可选）
+
+### Telegram Bot（已集成）
+
+支持多种记忆方案：
+- **默认方案**：本地文件 + AI 压缩（轻量）
+- **OpenClaw 集成**：自动检测，语义搜索（推荐）
+- **ChromaDB 集成**：向量数据库，强大语义搜索（可选）
+
+**快速启动：**
+```bash
+cd integrations/telegram
+pip install python-telegram-bot anthropic
+python bot.py
+```
+
+**详细文档：**
+- `integrations/telegram/README.md` — Telegram Bot 使用指南
+- `OPENCLAW_INTEGRATION.md` — OpenClaw 集成说明
+- `CHROMADB_INTEGRATION.md` — ChromaDB 集成指南（可选）
+- `CHROMADB_QUICKSTART.md` — ChromaDB 5分钟快速实施
 
 ---
 
