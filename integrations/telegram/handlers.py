@@ -13,6 +13,7 @@ from telegram.ext import ContextTypes
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from memory_manager import MemoryManager
 from task_parser import TaskParser, ResponseValidator
+from conversation_health import ConversationHealth
 
 from .ai_adapter import AIAdapter
 
@@ -33,6 +34,8 @@ class MessageHandlers:
         # 初始化任务解析器
         self.task_parser = TaskParser()
         self.response_validator = ResponseValidator()
+        # 初始化健康评分
+        self.health = ConversationHealth(self.memory)
         logger.info(f"Memory manager initialized: {storage_dir}")
         logger.info(f"Task parser initialized")
     
@@ -94,7 +97,10 @@ class MessageHandlers:
         
         # 获取记忆统计
         history = self.memory.load_history(user_id)
-        memory_text = self.memory._load_memory_file(user_id)  # 使用内部方法，不触发语义搜索
+        memory_text = self.memory._load_memory_file(user_id)
+        
+        # 健康评分
+        health_result = self.health.calculate_score(user_id)
         
         # 检测 OpenClaw
         openclaw_status = "✅ 已启用（语义搜索）" if self.memory.use_openclaw else "❌ 未安装"
@@ -104,13 +110,20 @@ class MessageHandlers:
 
 • Bot 状态: 运行中
 • AI 引擎: 已连接
-• 版本: v2.1.0
+• 版本: v2.5.0
 • OpenClaw: {openclaw_status}
 
 🧠 你的记忆状态：
 • 短期记忆：{len(history)} 条消息
 • 长期记忆：{len(memory_text)} 字符
 • 总对话轮数：{self.memory._get_total_rounds(user_id)}
+
+💊 对话健康评分：
+• 评分：{health_result['score']}/100 ({health_result['level']})
+• 策略：{health_result['strategy']}
+• 满意度：{health_result['breakdown']['satisfaction']}/30
+• 质量：{health_result['breakdown']['quality']}/30
+• 完成率：{health_result['breakdown']['completion']}/20
 
 一切正常！
 """
@@ -147,7 +160,12 @@ class MessageHandlers:
             parsed = self.task_parser.parse(user_message)
             logger.info(f"Task parsed: intent={parsed['intent']}, complexity={parsed['complexity']}")
             
-            # 2. 动态构建 Context（优化：根据复杂度调整）
+            # 2. 健康评分 + 自适应策略
+            health_result = self.health.calculate_score(user_id)
+            strategy = health_result['strategy']
+            logger.info(f"Health score: {health_result['score']} ({health_result['level']}), strategy: {strategy}")
+            
+            # 3. 动态构建 Context
             message_context = self._build_dynamic_context(
                 user_id=user_id,
                 user_message=user_message,
@@ -155,6 +173,9 @@ class MessageHandlers:
                 user=user,
                 chat_id=update.message.chat_id
             )
+            
+            # 4. 应用自适应策略
+            message_context = self.health.apply_strategy(strategy, message_context)
             
             # 5. 调用 AI 获取回复（使用增强 Prompt）
             enhanced_message = parsed['enhanced_prompt']
