@@ -1,14 +1,17 @@
 """
-AI 引擎适配器
-支持多种 AI 引擎的统一接口
+AI 引擎适配器（优化版 v2.0）
+新增：上下文感知、工作规范融入
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List, Dict
 
 
 class AIAdapter(ABC):
     """AI 引擎适配器基类"""
+    
+    def __init__(self):
+        self.model = None  # 子类需要设置
     
     @abstractmethod
     async def get_response(self, message: str, context: dict) -> str:
@@ -18,17 +21,50 @@ class AIAdapter(ABC):
         Args:
             message: 用户消息
             context: 上下文信息
+                - history: 对话历史 (list)
+                - memory: 长期记忆 (str)
+                - system_prompt: 系统提示词 (str)
             
         Returns:
             AI 回复内容
         """
         pass
+    
+    def _build_messages(self, message: str, context: dict) -> List[Dict]:
+        """构建消息列表（融入上下文）"""
+        messages = []
+        
+        # 1. 添加对话历史（短期记忆）
+        history = context.get("history", [])
+        if history:
+            # 只保留最近 5 轮（10 条消息）
+            recent_history = history[-10:]
+            messages.extend(recent_history)
+        
+        # 2. 添加当前消息
+        messages.append({"role": "user", "content": message})
+        
+        return messages
+    
+    def _build_system_prompt(self, context: dict) -> str:
+        """构建 System Prompt（融入记忆 + 工作规范）"""
+        # 基础 System Prompt
+        base_prompt = context.get("system_prompt", "你是一个智能助手")
+        
+        # 添加长期记忆
+        memory = context.get("memory", "")
+        if memory:
+            memory_section = f"\n\n【长期记忆】\n{memory[:500]}"  # 限制长度
+            base_prompt += memory_section
+        
+        return base_prompt
 
 
 class OpenAIAdapter(AIAdapter):
     """OpenAI 适配器"""
     
     def __init__(self, api_key: str, model: str = "gpt-4"):
+        super().__init__()
         try:
             from openai import AsyncOpenAI
             self.client = AsyncOpenAI(api_key=api_key)
@@ -37,11 +73,14 @@ class OpenAIAdapter(AIAdapter):
             raise ImportError("请安装 openai: pip install openai")
     
     async def get_response(self, message: str, context: dict) -> str:
+        system_prompt = self._build_system_prompt(context)
+        messages = self._build_messages(message, context)
+        
         response = await self.client.chat.completions.create(
             model=self.model,
             messages=[
-                {"role": "system", "content": "你是一个智能助手"},
-                {"role": "user", "content": message}
+                {"role": "system", "content": system_prompt},
+                *messages
             ]
         )
         return response.choices[0].message.content
@@ -51,6 +90,7 @@ class ClaudeAdapter(AIAdapter):
     """Claude 适配器"""
     
     def __init__(self, api_key: str, model: str = "claude-sonnet-4"):
+        super().__init__()
         try:
             import anthropic
             self.client = anthropic.AsyncAnthropic(api_key=api_key)
@@ -59,13 +99,14 @@ class ClaudeAdapter(AIAdapter):
             raise ImportError("请安装 anthropic: pip install anthropic")
     
     async def get_response(self, message: str, context: dict) -> str:
+        system_prompt = self._build_system_prompt(context)
+        messages = self._build_messages(message, context)
+        
         response = await self.client.messages.create(
             model=self.model,
-            max_tokens=1024,
-            system="你是一个智能助手",
-            messages=[
-                {"role": "user", "content": message}
-            ]
+            max_tokens=2048,
+            system=system_prompt,
+            messages=messages
         )
         return response.content[0].text
 
@@ -74,6 +115,7 @@ class DeepSeekAdapter(AIAdapter):
     """DeepSeek 适配器"""
     
     def __init__(self, api_key: str, model: str = "deepseek-chat"):
+        super().__init__()
         try:
             from openai import AsyncOpenAI
             self.client = AsyncOpenAI(
@@ -85,11 +127,14 @@ class DeepSeekAdapter(AIAdapter):
             raise ImportError("请安装 openai: pip install openai")
     
     async def get_response(self, message: str, context: dict) -> str:
+        system_prompt = self._build_system_prompt(context)
+        messages = self._build_messages(message, context)
+        
         response = await self.client.chat.completions.create(
             model=self.model,
             messages=[
-                {"role": "system", "content": "你是一个智能助手"},
-                {"role": "user", "content": message}
+                {"role": "system", "content": system_prompt},
+                *messages
             ]
         )
         return response.choices[0].message.content
@@ -99,6 +144,7 @@ class OllamaAdapter(AIAdapter):
     """Ollama 适配器（本地模型）"""
     
     def __init__(self, base_url: str = "http://localhost:11434", model: str = "llama2"):
+        super().__init__()
         try:
             from openai import AsyncOpenAI
             self.client = AsyncOpenAI(
@@ -110,11 +156,14 @@ class OllamaAdapter(AIAdapter):
             raise ImportError("请安装 openai: pip install openai")
     
     async def get_response(self, message: str, context: dict) -> str:
+        system_prompt = self._build_system_prompt(context)
+        messages = self._build_messages(message, context)
+        
         response = await self.client.chat.completions.create(
             model=self.model,
             messages=[
-                {"role": "system", "content": "你是一个智能助手"},
-                {"role": "user", "content": message}
+                {"role": "system", "content": system_prompt},
+                *messages
             ]
         )
         return response.choices[0].message.content
