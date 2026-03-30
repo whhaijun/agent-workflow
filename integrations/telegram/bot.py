@@ -61,8 +61,8 @@ def main():
         print(f"❌ AI 适配器创建失败: {e}")
         sys.exit(1)
     
-    # 创建消息处理器
-    handlers = MessageHandlers(ai_adapter)
+    # 创建消息处理器（传入存储目录）
+    handlers = MessageHandlers(ai_adapter, storage_dir="./data/memory")
     
     # 创建应用
     application = Application.builder().token(config.telegram.bot_token).build()
@@ -71,6 +71,8 @@ def main():
     application.add_handler(CommandHandler("start", handlers.start_command))
     application.add_handler(CommandHandler("help", handlers.help_command))
     application.add_handler(CommandHandler("status", handlers.status_command))
+    application.add_handler(CommandHandler("memory", handlers.memory_command))  # 新增
+    application.add_handler(CommandHandler("tasks", handlers.tasks_command))    # 新增
     
     # 注册消息处理器
     application.add_handler(
