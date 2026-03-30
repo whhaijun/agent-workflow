@@ -189,6 +189,69 @@ T01、T02、T03...（三位数字，不足补零）
 
 ---
 
+## 📋 GitHub Issues 任务管理（所有人必须遵守）
+
+**仓库地址：** https://github.com/whhaijun/team-tasks（私有）
+
+### 工作流程
+
+**1. 收到任务 → 创建 issue**
+```bash
+gh issue create --repo whhaijun/team-tasks \
+  --title "T01 任务简述" \
+  --body "**负责人：** 组长
+**预计完成：** HH:MM
+**任务描述：** ...
+**完成标准：** ..." \
+  --label "待处理" \
+  --assignee whhaijun
+```
+
+**2. 开始执行 → 更新状态**
+```bash
+gh issue edit <编号> --repo whhaijun/team-tasks \
+  --remove-label "待处理" \
+  --add-label "进行中"
+
+gh issue comment <编号> --repo whhaijun/team-tasks \
+  --body "开始执行，预计 XX:XX 完成"
+```
+
+**3. 完成/失败 → 关闭 issue**
+```bash
+gh issue comment <编号> --repo whhaijun/team-tasks \
+  --body "✅ 已完成：结果 + 产出"
+
+gh issue close <编号> --repo whhaijun/team-tasks
+```
+
+**4. 卡住 → 标记并上报**
+```bash
+gh issue edit <编号> --repo whhaijun/team-tasks \
+  --add-label "卡住"
+
+gh issue comment <编号> --repo whhaijun/team-tasks \
+  --body "⚠️ 卡住原因：... 需要介入"
+```
+
+### 标签说明
+- `待处理` — 任务已创建，等待开始
+- `进行中` — 正在执行
+- `已完成` — 任务完成
+- `卡住` — 超时/失败，需要介入
+- `已转移` — 任务已转给其他人
+
+### 查看任务
+```bash
+# 查看所有进行中的任务
+gh issue list --repo whhaijun/team-tasks --label "进行中"
+
+# 查看我的任务
+gh issue list --repo whhaijun/team-tasks --assignee @me
+```
+
+---
+
 ## ⏱️ 进度监控（组长强制规则）
 
 **派发任务后必须做的事：**
