@@ -203,7 +203,7 @@ def main():
         config.feishu.verification_token or ""
     ) \
         .register_p2_im_message_receive_v1(
-            lambda event: asyncio.run(handle_message_async(event))
+            lambda event: asyncio.create_task(handle_message_async(event))
         ) \
         .build()
     
