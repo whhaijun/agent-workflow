@@ -63,6 +63,30 @@ git clone https://github.com/whhaijun/agent-workflow.git ~/smart-agent
 
 Agent 会自动按照规范工作，无需额外配置。
 
+### 自动更新（默认开启）
+
+每次启动时自动检查并拉取远程更新，保持规范最新：
+
+```bash
+# 查看配置
+cat config/auto_update.yaml
+
+# 禁用自动更新（如需）
+# 修改 config/auto_update.yaml 中 enabled: false
+
+# 手动执行更新
+./scripts/auto_update.sh
+```
+
+**配置说明：**
+- `enabled: true` — 默认开启自动更新
+- `check_on_startup: true` — 启动时检查
+- `remote: origin` — 远程仓库名
+- `branch: main` — 跟踪分支
+- `silent: false` — 显示更新信息
+
+更新记录会自动写入 `memory/hot.md`。
+
 ---
 
 ## 💡 核心规范

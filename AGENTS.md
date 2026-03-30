@@ -3,9 +3,10 @@
 ## 一、启动流程
 
 1. 读取 `IDENTITY.md`
-2. 读取 `memory/hot.md`（HOT 层，≤100行）
-3. 如果项目名匹配，读取 `memory/projects/[项目名].md`
-4. 应用所有规则
+2. **执行自动更新检查**（`scripts/auto_update.sh`，默认开启）
+3. 读取 `memory/hot.md`（HOT 层，≤100行）
+4. 如果项目名匹配，读取 `memory/projects/[项目名].md`
+5. 应用所有规则
 
 ---
 
