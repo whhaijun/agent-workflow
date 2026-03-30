@@ -150,7 +150,14 @@ smart-agent-workflow/
 
 ## 🤖 Bot 集成（可选）
 
-### Telegram Bot（已集成）
+多渠道支持，所有 Bot 共用同一套 AI 适配器和记忆管理：
+
+| 渠道 | 通信方式 | 目录 | 文档 |
+|------|---------|------|------|
+| Telegram | 轮询（polling） | `integrations/telegram/` | [README](./integrations/telegram/README.md) |
+| 飞书 | Webhook（HTTP 回调） | `integrations/feishu/` | [README](./integrations/feishu/README.md) |
+
+### Telegram Bot
 
 支持多种记忆方案：
 - **默认方案**：本地文件 + AI 压缩（轻量）
@@ -164,7 +171,24 @@ pip install python-telegram-bot anthropic
 python bot.py
 ```
 
+### 飞书 Bot
+
+无额外依赖，使用 Python 标准库，与 Telegram Bot 共用 AI 适配器。
+
+**快速启动：**
+```bash
+# 1. 本地开发（需要 ngrok 提供公网 URL）
+ngrok http 8080
+
+# 2. 启动 Bot
+cd integrations/feishu
+FEISHU_APP_ID=xxx FEISHU_APP_SECRET=xxx FEISHU_VERIFICATION_TOKEN=xxx \
+AI_ENGINE=claude CLAUDE_API_KEY=xxx python bot.py
+```
+
 **详细文档：**
+- `integrations/feishu/README.md` — 飞书 Bot 使用指南
+- `docs/FEISHU_INTEGRATION.md` — 完整飞书集成文档（含部署）
 - `integrations/telegram/README.md` — Telegram Bot 使用指南
 - `OPENCLAW_INTEGRATION.md` — OpenClaw 集成说明
 - `CHROMADB_INTEGRATION.md` — ChromaDB 集成指南（可选）
