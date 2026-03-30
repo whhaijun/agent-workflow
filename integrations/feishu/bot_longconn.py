@@ -71,13 +71,6 @@ async def handle_message_async(event_data):
         
         # 解析任务
         task_info = _task_parser.parse(text)
-        if task_info:
-            _tracker.add_task(
-                user_id=user_id,
-                task_id=task_info['task_id'],
-                description=text,
-                priority=task_info.get('priority', 'P2')
-            )
         
         # 构建上下文
         context = {
