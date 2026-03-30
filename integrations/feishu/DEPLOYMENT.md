@@ -29,11 +29,30 @@
 4. 记录 **Verification Token**（可选）
 5. 记录 **Encrypt Key**（可选）
 
-### 4. 配置权限
+### 4. 配置权限（必需）
 
-在「权限管理」页面添加：
-- `im:message` - 获取与发送单聊、群组消息
-- `im:message.group_at_msg` - 获取群组中所有消息（如需群聊）
+⚠️ **不配置权限，Bot 无法收发消息！**
+
+进入「权限管理」页面（https://open.feishu.cn/app/你的AppID/permission），添加以下权限：
+
+**必需权限：**
+1. **`im:message`** - 获取与发送单聊、群组消息
+   - 权限说明：允许 Bot 发送消息
+   - 搜索关键词：`消息` 或 `im:message`
+
+2. **`im:message.receive_v1`** - 接收消息事件
+   - 权限说明：允许 Bot 接收用户发来的消息
+   - 搜索关键词：`接收消息` 或 `im:message.receive_v1`
+
+**可选权限（如需群聊）：**
+- `im:message.group_at_msg` - 获取群组中所有消息
+
+**权限配置步骤：**
+1. 点击「添加权限」
+2. 搜索 `im:message`，勾选
+3. 搜索 `im:message.receive_v1`，勾选
+4. 点击「保存」
+5. 如果提示需要重新发布应用，按提示操作
 
 ### 5. 发布应用
 
