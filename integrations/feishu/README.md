@@ -44,6 +44,21 @@ pip install lark-oapi  # 飞书官方 SDK（可选，本实现使用标准库）
 
 ### 3. 配置环境变量
 
+**方式一：使用 .env 文件（推荐）**
+
+```bash
+# 1. 复制配置模板
+cp .env.example .env
+
+# 2. 编辑 .env，填入真实配置
+vim .env
+
+# 3. 使用启动脚本（自动加载 .env）
+./start.sh
+```
+
+**方式二：手动导出环境变量**
+
 ```bash
 # 飞书 Bot 配置
 export FEISHU_APP_ID=cli_xxxxxx
