@@ -70,7 +70,7 @@ async def handle_message_async(event_data):
         user_memory = _memory.load_memory(user_id)
         
         # 解析任务
-        task_info = _task_parser.parse_task(text)
+        task_info = _task_parser.parse(text)
         if task_info:
             _tracker.add_task(
                 user_id=user_id,
