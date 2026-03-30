@@ -4,11 +4,18 @@
 不需要公网 URL，通过 SDK 长连接接收事件
 """
 
+import os
+# 禁用 SSL 证书验证（解决本地代理证书问题）
+os.environ['PYTHONHTTPSVERIFY'] = '0'
+os.environ['CURL_CA_BUNDLE'] = ''
+os.environ['REQUESTS_CA_BUNDLE'] = ''
+
 import logging
 import sys
-import os
 import json
 import asyncio
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config import config
