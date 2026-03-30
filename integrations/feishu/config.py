@@ -53,8 +53,9 @@ class Config:
         if not self.feishu.app_secret:
             raise ValueError("FEISHU_APP_SECRET is required")
         
-        if not self.feishu.verification_token:
-            raise ValueError("FEISHU_VERIFICATION_TOKEN is required")
+        # VERIFICATION_TOKEN 可选（留空时跳过验证，仅用于测试）
+        # if not self.feishu.verification_token:
+        #     raise ValueError("FEISHU_VERIFICATION_TOKEN is required")
         
         if self.ai.engine not in ['openai', 'claude', 'deepseek', 'ollama']:
             raise ValueError(f"Unsupported AI engine: {self.ai.engine}")
