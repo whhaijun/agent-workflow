@@ -41,3 +41,12 @@ temp/
 
 # 其他
 .cache/
+
+# 用户敏感数据（运行时生成，禁止提交）
+integrations/feishu/data/
+integrations/feishu/bot.log
+data/
+checkpoints/
+
+# 测试/运行时数据
+*.json.bak

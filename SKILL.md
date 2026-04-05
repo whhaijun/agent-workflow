@@ -1,71 +1,81 @@
 ---
-name: smart-agent-workflow
-description: AI Agent 工作方法论 Skill — 专注 3高（高质量+高效率+高节省）。提供任务类型判断、WBS 拆分、P0/P1 分级汇报、安全检查、Context 管理。渠道无关，适用于 Claude Code、Cursor、Codex、OpenClaw 等任何 AI agent。唯一提供完整工作方法论的 Skill。
+name: smart-agent-template
+description: Smart Agent 工作流模板：三重判断机制 + 自动更新 + Context 优化。包含完整的任务执行规范、WBS 拆分、流程豁免阈值、记忆管理等最佳实践。
+metadata:
+  openclaw:
+    emoji: 🤖
 ---
 
-# Smart Agent Workflow
+# Smart Agent Template
 
-**专注 3高：高质量 + 高效率 + 高节省**
+Agent 工作流模板，实现高效的任务管理和协作机制。
 
-## 核心价值
+## 核心特性
 
-| 原则 | 解决的问题 | 实现方式 |
-|------|-----------|---------|
-| 🎯 高质量 | agent 容易失控、偏离目标 | WBS 拆分 + P0/P1 汇报规范 |
-| ⚡ 高效率 | 任务执行混乱、缺少规范 | 任务类型判断 + 批次执行 |
-| 💰 高节省 | Context 超限、Token 浪费 | Context 管理 + 分层记忆 |
+### 1. 三重判断机制
+- **会话独立性判断**：自动识别任务是否可以在新会话执行，避免 context 膨胀
+- **执行者判断**：根据任务类型自动分配给合适的 agent
+- **WBS 拆分判断**：复杂任务自动拆分，确保每个子任务可控
 
-## 核心规范
+### 2. 自动更新
+- 启动时自动检查 GitHub/Gitee 更新
+- 可配置开关（config/auto_update.yaml）
+- 支持静默更新
 
-### 任务类型判断
+### 3. Context 优化
+- spawn subagent = 新空白 context
+- Task Brief 最小化传递（≤ 100 字背景）
+- 触发条件：对话 ≥ 15 轮 / context > 80K / 连续同类任务 > 3 次
 
-```
-收到任务 → 新任务 or 连续任务？
-         → 简单 or 复杂？（文件≥3 / 步骤≥5 / 耗时>15分钟，满足2条）
-         → 简单任务用 P0，复杂任务用 P0+P1
-```
-
-### P0 规范（所有任务必须，3条）
-
-1. 复杂任务必须拆分
-2. 卡住必须上报（失败≥2次 / 等待>30秒）
-3. 完成必须汇报（目标 + 结果 + 产出）
-
-### P1 规范（复杂任务建议，3条）
-
-4. 批次完成汇报
-5. 危险操作确认
-6. 连续任务插断点
-
-## 推荐组合
-
-```bash
-# 最小配置
-clawhub install smart-agent-workflow
-
-# 标准配置（推荐）
-clawhub install smart-agent-workflow
-clawhub install self-improving
-
-# 完整配置
-clawhub install smart-agent-workflow
-clawhub install self-improving
-clawhub install proactivity
-```
-
-## 适用范围
-
-渠道无关，适用于任何 AI agent：
-- Claude Code（推荐）
-- Cursor / Windsurf
-- Codex
-- OpenClaw
+### 4. 流程豁免阈值
+满足所有 5 条可跳过三重判断：
+- 单文件操作
+- ≤ 3 步
+- 无依赖
+- 耗时 < 2 分钟
+- 纯操作类
 
 ## 快速开始
 
-```markdown
-# 在 CLAUDE.md 或 Rules for AI 中添加：
-读取 ~/smart-agent/AGENTS.md 并遵守所有规范
+1. 克隆模板
+```bash
+git clone https://github.com/whhaijun/agent-workflow.git
+cd agent-workflow
 ```
 
-详细文档：https://github.com/whhaijun/agent-workflow
+2. 配置身份
+编辑 `IDENTITY.md` 定义 agent 角色
+
+3. 启动
+按 `AGENTS.md` 启动流程执行
+
+## 文件结构
+
+```
+├── AGENTS.md           # 工作规范（核心）
+├── IDENTITY.md         # Agent 身份定义
+├── config/
+│   └── auto_update.yaml  # 自动更新配置
+├── scripts/
+│   └── auto_update.sh    # 更新脚本
+├── memory/
+│   └── hot.md           # HOT 层记忆
+└── docs/               # 详细文档
+```
+
+## 使用场景
+
+- 多 Agent 协作项目
+- 需要长期记忆的 Agent
+- 复杂任务自动拆分
+- 需要版本管理的 Agent 工作流
+
+## 更多文档
+
+- [任务执行规范](docs/TASK_EXECUTION.md)
+- [记忆管理](docs/MEMORY_MANAGEMENT.md)
+- [多 Agent 协作](docs/MULTI_AGENT_COLLABORATION.md)
+
+## License
+
+MIT

@@ -9,12 +9,7 @@ import sys
 from telegram import Update
 from telegram.ext import ContextTypes
 
-# 添加父目录到路径，以便导入 memory_manager 和 task_parser
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from memory_manager import MemoryManager
-from task_parser import TaskParser, ResponseValidator
-from conversation_health import ConversationHealth
-from task_tracker import TaskTracker
+from integrations.utils import MemoryManager, TaskParser, ResponseValidator, ConversationHealth, TaskTracker
 
 from .ai_adapter import AIAdapter
 
@@ -257,7 +252,7 @@ class MessageHandlers:
         - 中等 → 部分 Context
         - 复杂 → 完整 Context
         """
-        from task_parser import TaskComplexity
+        from integrations.utils import TaskComplexity
         
         complexity = parsed['complexity']
         needs_context = parsed['needs_context']  # 是否需要上下文

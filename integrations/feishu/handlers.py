@@ -8,12 +8,7 @@ import os
 import sys
 import json
 
-# 添加父目录到路径
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from memory_manager import MemoryManager
-from task_parser import TaskParser, ResponseValidator
-from conversation_health import ConversationHealth
-from task_tracker import TaskTracker
+from integrations.utils import MemoryManager, TaskParser, ResponseValidator, ConversationHealth, TaskTracker
 
 # 导入 Telegram 的 AI 适配器（复用）
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'telegram'))

@@ -3,7 +3,7 @@
 **AI Agent 工作方法论 Skill — 专注 3高：高质量 + 高效率 + 高节省**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)]()
 [![ClawHub](https://img.shields.io/badge/clawhub-smart--agent--workflow-blue)](https://clawhub.com)
 
 ---
@@ -21,6 +21,15 @@
 | 🎯 高质量 | agent 容易失控、偏离目标 | WBS 拆分 + P0/P1 汇报规范 |
 | ⚡ 高效率 | 任务执行混乱、缺少规范 | 任务类型判断 + 批次执行 |
 | 💰 高节省 | Context 超限、Token 浪费 | Context 管理 + DO NOT 列表 + Credit Burn Loop 防护 |
+
+### v1.4.0 新能力
+
+| 能力 | 说明 |
+|------|------|
+| MCP 集成 | 支持 stdio 和 HTTP/SSE 双模式，动态加载外部工具 |
+| 原生并行 | 多 Agent 并行执行，环境无关，支持 Checkpoint 断点续传 |
+| 安全清理 | 敏感数据隔离，`.gitignore` 规范化 |
+| 标准化包结构 | `integrations/utils/` 统一工具模块，Python 包规范 |
 
 ---
 

@@ -24,10 +24,7 @@ from config import config
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'telegram'))
 from ai_adapter import create_ai_adapter
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from memory_manager import MemoryManager
-from task_parser import TaskParser
-from task_tracker import TaskTracker
+from integrations.utils import MemoryManager, TaskParser, TaskTracker
 
 # 配置日志
 logging.basicConfig(
