@@ -1,5 +1,22 @@
 # 更新日志
 
+## v1.4.0 (2026-04-05)
+
+### 新增
+- ✅ 原生并行执行能力（环境无关）
+  - `integrations/parallel/worker.py` — AgentWorker，独立子进程执行子任务
+  - `integrations/parallel/pool.py` — AgentPool，批量并行 + 超时保护 + 错误隔离
+  - `integrations/parallel/rpc_server.py` — AgentRPCServer/Client，跨进程工具调用
+  - 零外部依赖，全部使用 Python 标准库
+  - 兼容无 OpenClaw 环境（Claude Code / Codex / 独立部署）
+
+### 设计原则
+- 每批并行上限 max_workers=3（与团队 WBS 规范保持一致）
+- 错误隔离：单个 Worker 失败不影响其他 Worker
+- 超时保护：每个 Worker 独立超时，不阻塞整体
+
+---
+
 ## v1.3.0 (2026-04-05)
 
 ### 新增
