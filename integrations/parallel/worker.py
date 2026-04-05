@@ -5,7 +5,10 @@
 import multiprocessing
 import queue
 import traceback
-from typing import Callable, Any
+from pathlib import Path
+from typing import Callable, Any, Optional
+
+from .checkpoint import DEFAULT_CHECKPOINT_DIR, CheckpointReader
 
 
 class AgentWorker:
@@ -27,6 +30,9 @@ class AgentWorker:
             args=(task_fn, args, kwargs or {}, self._result_queue),
             name=f"agent-worker-{name}"
         )
+        # checkpoint 路径（子进程写，主进程读）
+        self.checkpoint_path = DEFAULT_CHECKPOINT_DIR / f"{name}.json"
+        self._checkpoint_reader = CheckpointReader(task_id=name)
 
     @staticmethod
     def _run(task_fn: Callable, args: tuple, kwargs: dict, result_queue: multiprocessing.Queue):
@@ -83,3 +89,13 @@ class AgentWorker:
             return res["result"]
         except queue.Empty:
             raise TimeoutError(f"Worker [{self.name}] timed out after {timeout}s")
+
+    def checkpoint(self) -> Optional["TaskBrief"]:
+        """
+        尝试读取子进程写入的 checkpoint。
+        在 terminate() 之前调用，抢救中间状态。
+
+        Returns:
+            TaskBrief 对象，如果子进程没有写 checkpoint 则返回 None
+        """
+        return self._checkpoint_reader.read()

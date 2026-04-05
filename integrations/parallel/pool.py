@@ -104,8 +104,32 @@ class AgentPool:
                     result = worker.get_result(timeout=effective_timeout)
                     results[name] = {"status": "ok", "result": result}
                 except TimeoutError as e:
+                    # 1. 超时前先抢救 checkpoint
+                    interim_brief = worker.checkpoint()
+                    # 2. 再 terminate
                     worker.terminate()
-                    results[name] = {"status": "timeout", "error": str(e)}
+
+                    if interim_brief is not None:
+                        # 3. 检查 Brief 是否过大，需要拆分
+                        if interim_brief.is_oversized():
+                            sub_briefs = interim_brief.split()
+                            results[name] = {
+                                "status": "timeout_with_brief",
+                                "error": str(e),
+                                "interim_brief": interim_brief,
+                                "sub_briefs": sub_briefs,  # 拆分后的子任务列表，调用方可直接 submit
+                                "needs_split": True,
+                            }
+                        else:
+                            results[name] = {
+                                "status": "timeout_with_brief",
+                                "error": str(e),
+                                "interim_brief": interim_brief,
+                                "sub_briefs": [interim_brief],
+                                "needs_split": False,
+                            }
+                    else:
+                        results[name] = {"status": "timeout", "error": str(e)}
                 except Exception as e:
                     results[name] = {"status": "error", "error": str(e)}
                 finally:

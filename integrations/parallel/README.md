@@ -141,3 +141,79 @@ server.stop()
 3. **避免共享可变状态**：子进程有独立内存空间，主进程的变量修改不会传播到子进程
 4. **RPC 参数类型限制**：`xmlrpc` 仅支持基础类型（str / int / float / list / dict / bool / None），复杂对象需先序列化
 5. **macOS 多进程注意**：在 `if __name__ == "__main__":` 保护块中调用 `pool.run_all()`，避免子进程递归 fork
+
+---
+
+## Checkpoint 与任务接力
+
+超时不再等于任务丢失。子进程可以定期写 checkpoint，主进程超时后抢救中间状态，并将其传递给下一个 Worker 继续执行。
+
+### 1. 子进程写进度（CheckpointWriter）
+
+在 `task_fn` 内部创建 `CheckpointWriter`，定期调用 `update_progress` / `set_remaining` / `add_artifact`：
+
+```python
+from integrations.parallel.checkpoint import CheckpointWriter
+
+def long_task(task_id: str) -> str:
+    writer = CheckpointWriter(task_id=task_id, goal="处理大批量数据")
+    writer.set_remaining(["Step 2: 转换格式", "Step 3: 写入文件"])
+    writer.update_progress("Step 1: 读取数据完成")
+    writer.add_artifact("raw_data_path", "/tmp/raw.json")
+    # ... 继续执行
+    return "done"
+```
+
+### 2. 超时后主进程拿到 interim_brief
+
+`run_all()` 超时时，结果 `status` 变为 `"timeout_with_brief"`，包含抢救到的 `interim_brief`：
+
+```python
+results = pool.run_all(timeout=10)
+res = results["my_task"]
+if res["status"] == "timeout_with_brief":
+    brief = res["interim_brief"]
+    print(f"已完成: {brief.progress}")
+    print(f"剩余:   {brief.remaining}")
+```
+
+### 3. Brief 过大时自动拆分并重新 submit
+
+如果 `interim_brief` 超过 4000 字符（约 1000 tokens），`needs_split=True`，`sub_briefs` 已自动拆好：
+
+```python
+if res["needs_split"]:
+    new_pool = AgentPool()
+    for sub in res["sub_briefs"]:
+        new_pool.submit(sub.task_id, resume_task, args=(sub,))
+    new_results = new_pool.run_all(timeout=60)
+```
+
+### 完整示例
+
+```python
+from integrations.parallel.pool import AgentPool
+from integrations.parallel.checkpoint import CheckpointWriter, TaskBrief
+
+def my_task(task_id: str) -> str:
+    writer = CheckpointWriter(task_id=task_id, goal="分析日志文件")
+    writer.set_remaining(["解析错误行", "生成报告"])
+    writer.update_progress("读取文件完成")
+    import time; time.sleep(100)  # 模拟耗时
+    return "done"
+
+def resume_task(brief: TaskBrief) -> str:
+    print(f"接力执行: {brief.remaining}")
+    return f"resumed {brief.task_id}"
+
+pool = AgentPool()
+pool.submit("analyzer", my_task, args=("analyzer",))
+results = pool.run_all(timeout=5)
+
+res = results["analyzer"]
+if res["status"] == "timeout_with_brief":
+    pool2 = AgentPool()
+    for sub in res["sub_briefs"]:
+        pool2.submit(sub.task_id, resume_task, args=(sub,))
+    print(pool2.run_all(timeout=30))
+```
