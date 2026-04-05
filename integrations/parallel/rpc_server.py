@@ -13,7 +13,13 @@
 """
 import threading
 from xmlrpc.server import SimpleXMLRPCServer
-from xmlrpc.client import ServerProxy, Fault
+from xmlrpc.client import ServerProxy, Fault, Transport
+from socketserver import ThreadingMixIn
+
+
+class ThreadedXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
+    """支持多线程并发的 XML-RPC Server"""
+    daemon_threads = True  # 子线程随主线程退出
 
 
 class AgentRPCServer:
@@ -30,7 +36,7 @@ class AgentRPCServer:
         """
         self.host = host
         self.port = port
-        self._server = SimpleXMLRPCServer(
+        self._server = ThreadedXMLRPCServer(
             (host, port),
             logRequests=False,   # 关闭请求日志，减少噪声
             allow_none=True      # 允许传输 None 值
@@ -64,20 +70,34 @@ class AgentRPCServer:
         self._server.shutdown()
 
 
+class TimeoutTransport(Transport):
+    """带超时的 XML-RPC Transport"""
+    def __init__(self, timeout=10, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.timeout = timeout
+
+    def make_connection(self, host):
+        conn = super().make_connection(host)
+        conn.timeout = self.timeout
+        return conn
+
+
 class AgentRPCClient:
     """
     XML-RPC 客户端，供子进程调用主进程注册的工具函数。
     """
 
-    def __init__(self, host: str = "127.0.0.1", port: int = 8765):
+    def __init__(self, host: str = "127.0.0.1", port: int = 8765, timeout: float = 10.0):
         """
         Args:
-            host: RPC Server 地址
-            port: RPC Server 端口
+            host:    RPC Server 地址
+            port:    RPC Server 端口
+            timeout: 连接超时秒数
         """
         self._proxy = ServerProxy(
             f"http://{host}:{port}/",
-            allow_none=True   # 允许接收 None 返回值
+            allow_none=True,
+            transport=TimeoutTransport(timeout=timeout)
         )
 
     def call(self, method: str, **kwargs):

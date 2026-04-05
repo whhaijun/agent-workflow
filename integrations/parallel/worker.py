@@ -56,6 +56,8 @@ class AgentWorker:
 
     def terminate(self):
         """强制终止子进程（超时保护用）"""
+        # 必须先 cancel_join_thread，防止子进程写满 Queue pipe 导致卡死
+        self._result_queue.cancel_join_thread()
         self._process.terminate()
 
     def get_result(self, timeout: float = 60) -> Any:
