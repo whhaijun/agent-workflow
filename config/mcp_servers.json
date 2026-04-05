@@ -1,0 +1,15 @@
+{
+  "mcp_servers": [
+    {
+      "name": "figma",
+      "description": "Figma 设计稿操作",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@southleft/figma-console-mcp"],
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "${FIGMA_ACCESS_TOKEN}"
+      },
+      "enabled": false
+    }
+  ]
+}
